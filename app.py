@@ -22,89 +22,21 @@ model = load_model('./static/CardiacRiskPrediction.h5')
 @app.route('/')
 def home():
     return render_template('index.html')
-
-@app.route('/signup', methods=['GET', 'POST'])
+@app.route('/signup')
 def signup():
-    if request.method == 'POST':
-        name = request.form['name']
-        email = request.form['email']
-        password = request.form['password']
-        confirm_password = request.form['confirm_password']
-
-        # Check if the passwords match
-        if password != confirm_password:
-            return render_template('signup.html', error='Passwords do not match')
-
-        # Check if the email is unique
-        existing_user = users_collection.find_one({'email': email})
-        if existing_user:
-            return render_template('signup.html', error='Email already exists')
-
-        # Hash the password before saving to the database
-        hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
-
-        # Save the user to the database
-        user_data = {
-            'name': name,
-            'email': email,
-            'password': hashed_password,  # Store hashed password
-            # Add other user data fields as needed
-        }
-
-        try:
-            users_collection.insert_one(user_data)
-            print("User successfully registered.")
-        except Exception as e:
-            print(f"Error inserting user into the database: {e}")
-
-        # Redirect to the login page after successful registration
-        return redirect(url_for('landing_index'))
-
     return render_template('signup.html')
-
 @app.route('/survey')
 def survey():
     return render_template('survey.html')
-
 @app.route('/landing_index')
 def landing_index():
-    # Check if the user is in the session
-    if 'user' in session:
-        user = session['user']
-        # Access user information, e.g., user['name'], user['email']
-        return render_template('landing_index.html', user=user)
-    else:
-        # If the user is not in the session, redirect to the login page
-        flash('Please log in first', 'danger')
-        return redirect(url_for('login'))
-
+    return render_template('landing_index.html')
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
-
-        if email and password:
-            # Check if the user exists in the database
-            user = users_collection.find_one({'email': email})
-
-            if user and check_password_hash(user['password'], password):
-                # If the email and password match, set the user in the session
-                session['user'] = {
-                    'email': user['email'],
-                    'name': user['name']
-                    # Add other user data fields as needed
-                }
-                flash('Login successful', 'success')
-                return redirect(url_for('landing_index'))
-            else:
-                # If login fails, show an error message
-                flash('Invalid email or password', 'danger')
-        else:
-            # If email or password is not provided, show an error message
-            flash('Please provide both email and password', 'danger')
-
-    # If the login fails, redirect back to the login page
+        # Handle login logic here
+        # For now, let's just redirect to the landing page route
+        return redirect(url_for('landing_index'))
     return render_template('index.html')
 
 @app.route('/predict', methods=['POST'])
